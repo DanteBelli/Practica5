@@ -2,20 +2,22 @@ package main
 
 import (
 	"testing"
+	"unicode/utf8"
 )
 
-func TestRevez(t *testing.T) {
-	testcases := []struct {
-		in, want string
-	}{
-		{"Hello, world", "dlrow ,olleH"},
-		{" ", " "},
-		{"!123456", "654321!"},
-	}
+func FuzzTestRevez(f *testing.F) {
+	testcases := []string{"Hello, world", " ", "!123456"}
 	for _, tc := range testcases {
-		rev := Revez(tc.in)
-		if rev != tc.want {
-			t.Errorf("Reverse: %q , want %q", rev, tc.want)
-		}
+		f.Add(tc)
 	}
+	f.Fuzz(func(t *testing.T, original string) {
+		rev := Revez(original)
+		doubleRev := Revez(rev)
+		if original != doubleRev {
+			t.Errorf("Antes: %q ,Despues: %q", original, doubleRev)
+		}
+		if utf8.ValidString(original) && !utf8.ValidString(rev) {
+			t.Errorf("El reves es invalido %q", rev)
+		}
+	})
 }
